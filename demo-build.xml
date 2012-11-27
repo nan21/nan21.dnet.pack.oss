@@ -1,0 +1,128 @@
+<project name="DemoDistributionBuilder" default="run" basedir=".">
+	<description>Ant task to create a demo distribution.</description>
+	<property file="distrib.properties" />
+
+
+	<target name="run" depends="prepare, createPlanFile, download, db, copy, pack">
+	</target>
+
+	<target name="publish">
+		<echo>Uploading to server...</echo>
+		<ftp server="${ftpServer}" userid="${ftpUser}" password="${ftpPassword}" passive="yes" remotedir="${ftpPath}" verbose="yes">
+			<fileset dir="${targetFolder}">
+				<include name="dnet_ebs-${dnetVersion}${tag}.zip" />
+			</fileset>
+		</ftp>
+	</target>
+
+
+	<target name="db">
+		<ant antfile="build-db.xml">
+		</ant>
+	</target>
+
+	<target name="download">
+		<ant antfile="build-download.xml">
+		</ant>
+	</target>
+
+	<target name="createPlanFile">
+		<ant antfile="build-plan-files.xml">
+		</ant>
+	</target>
+
+
+	<target name="pack">
+		<echo>Building the zip file...</echo>
+		<zip destfile="${zipFolder}/dnet_ebs-${dnetVersion}${tag}.zip" basedir="${targetFolder}" />
+	</target>
+
+
+	<target name="prepare">
+
+		<mkdir dir="${tempFolder}" />
+		<mkdir dir="${targetFolder}" />
+		<echo>Cleaning workspace...</echo>
+		<echo>Cleaning target folder...</echo>
+		<delete dir="${targetFolder}" includeEmptyDirs="true" includes="/**/*">
+
+		</delete>
+		<echo>Cleaning temporary folder...</echo>
+		<delete includeEmptyDirs="true">
+			<fileset dir="${tempFolder}" includes="/**/*" />
+		</delete>
+
+
+		<echo>Creating temporary sub-folder...</echo>
+		<mkdir dir="${tempFolder}/db" />
+		<mkdir dir="${tempFolder}/core" />
+		<mkdir dir="${tempFolder}/modules" />
+		<mkdir dir="${tempFolder}/maven-metadata" />
+		<mkdir dir="${targetFolder}/build/artifacts/db" />
+
+
+		<echo>Copying virgo into workspace...</echo>
+		<copy todir="${targetFolder}/${virgoName}">
+			<fileset dir="${virgoLocation}/${virgoName}" />
+		</copy>
+
+
+		<echo>Copying application libraries to the build/lib folder...</echo>
+		<copy todir="${targetFolder}/build/lib">
+			<fileset dir="${virgoLocation}/${virgoName}/repository/usr" />
+		</copy>
+
+
+		<echo>Copying configuration files...</echo>
+		<get src="https://raw.github.com/nan21/nan21.dnet.core/master/nan21.dnet.core.config/net.nan21.dnet.demo.properties" dest="${targetFolder}/${virgoName}/repository/usr/net.nan21.dnet.properties" />
+		<replace file="${targetFolder}/${virgoName}/repository/usr/net.nan21.dnet.properties" token="@@dnetversion@@" value="${dnetVersion}${tag}" />
+
+
+		<copy file="${targetFolder}/${virgoName}/repository/usr/net.nan21.dnet.properties" tofile="${targetFolder}/build/artifacts/config/net.nan21.dnet.properties" />
+		<echo>Copying license files...</echo>
+		<get src="http://www.apache.org/licenses/LICENSE-2.0.txt" dest="${targetFolder}/LICENSE" />
+		<copy file="NOTICE" todir="${targetFolder}" />
+
+
+		<echo>Copying documentation folder...</echo>
+		<copy todir="${targetFolder}/docs/installation-guide">
+			<fileset dir="${docsFolderIG}" includes="htmlsingle/**,resources/**" />
+		</copy>
+
+
+		<copy todir="${targetFolder}/docs/programmer-guide">
+			<fileset dir="${docsFolderPG}" includes="htmlsingle/**,resources/**" />
+		</copy>
+	</target>
+
+
+
+
+	<target name="copy">
+
+		<echo>Copying core artifacts to virgo repository/usr...</echo>
+		<copy todir="${targetFolder}/${virgoName}/repository/usr">
+			<fileset dir="${tempFolder}/core" />
+		</copy>
+
+
+		<echo>Copying module artifacts to virgo repository/usr...</echo>
+		<copy todir="${targetFolder}/${virgoName}/repository/usr">
+			<fileset dir="${tempFolder}/modules" />
+		</copy>
+
+
+		<echo>Copying core artifacts to the build/artifacts folder...</echo>
+		<copy todir="${targetFolder}/build/artifacts/core">
+			<fileset dir="${tempFolder}/core" />
+		</copy>
+
+
+		<echo>Copying module artifacts to the build/artifacts folder...</echo>
+		<copy todir="${targetFolder}/build/artifacts/modules">
+			<fileset dir="${tempFolder}/modules" />
+		</copy>
+	</target>
+
+
+</project>

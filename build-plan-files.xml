@@ -1,0 +1,122 @@
+<project name="DemoDistributionBuilder" default="createPlanFile" basedir="." xmlns:ac="antlib:net.sf.antcontrib">
+	<description>Build database artifacts.</description>
+	<property file="distrib.properties" />
+
+	<target name="createPlanFile" depends="createPlanFileCore,createPlanFileModulesAll,createPlanFileHrm">
+	</target>
+
+	<!-- ================================================================================== -->
+	<!-- ========================= PLAN FILES: CORE  ====================================== -->
+	<!-- ================================================================================== -->
+
+
+	<target name="createPlanFileCore">
+
+		<echo>Creating the plan file for core...</echo>
+		<ac:var name="file" value="${targetFolder}/${virgoName}/pickup/net.nan21.dnet.core-${dnetVersion}.plan" />
+
+		<echo file="${file}">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;plan name="nan21.dnet.core.plan" version="${dnetVersion}" scoped="false" atomic="true"
+        xmlns="http://www.eclipse.org/virgo/schema/plan"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="
+		        http://www.eclipse.org/virgo/schema/plan 
+		        http://www.eclipse.org/virgo/schema/plan/eclipse-virgo-plan.xsd"&gt;
+
+		&lt;artifact type="configuration" name="net.nan21.dnet" /&gt;
+			</echo>
+
+		<ac:for list="${coreBundles}" param="bundle">
+			<sequential>
+				<echo file="${file}" append="true">
+		&lt;artifact type="bundle" name="nan21.dnet.core.@{bundle}"/&gt;</echo>
+			</sequential>
+		</ac:for>
+
+		<echo file="${file}" append="true">
+						
+&lt;/plan&gt;</echo>
+		<copy file="${targetFolder}/${virgoName}/pickup/net.nan21.dnet.core-${dnetVersion}.plan" todir="${targetFolder}/build/artifacts/plan" />
+	</target>
+
+
+
+	<!-- ================================================================================== -->
+	<!-- ======================== PLAN FILES: MODULES-ALL  ================================ -->
+	<!-- ================================================================================== -->
+
+
+	<target name="createPlanFileModulesAll">
+
+		<echo>Creating the plan file for modules...</echo>
+		<ac:var name="file" value="${targetFolder}/${virgoName}/pickup/net.nan21.dnet.modules-${dnetVersion}.plan" />
+		<echo file="${file}">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;plan name="nan21.dnet.modules.plan" version="${dnetVersion}" scoped="false" atomic="true"
+        xmlns="http://www.eclipse.org/virgo/schema/plan"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="
+		        http://www.eclipse.org/virgo/schema/plan 
+		        http://www.eclipse.org/virgo/schema/plan/eclipse-virgo-plan.xsd"&gt;
+		
+		&lt;artifact type="bundle" name="nan21.dnet.modules_oss.jpa_all" /&gt;	
+</echo>
+
+		<ac:for list="${planModulesAll}" param="module">
+			<sequential>
+				<echo file="${file}" append="true">
+		&lt;artifact type="bundle" name="nan21.dnet.module.@{module}.business" /&gt;
+		&lt;artifact type="bundle" name="nan21.dnet.module.@{module}.presenter" /&gt;
+		&lt;artifact type="bundle" name="nan21.dnet.module.@{module}.data" /&gt;
+		&lt;artifact type="bundle" name="nan21.dnet.module.@{module}.ui.extjs" /&gt;
+				</echo>
+			</sequential>
+		</ac:for>
+		 
+		<echo file="${file}" append="true">			
+		&lt;artifact type="bundle" name="nan21.dnet.modules_oss.i18n" /&gt;
+		
+		&lt;artifact type="bundle" name="nan21.dnet.module.md.www"  version="${dnetVersion}"/&gt;
+			
+&lt;/plan&gt;
+		</echo>
+		<copy file="${targetFolder}/${virgoName}/pickup/net.nan21.dnet.modules-${dnetVersion}.plan" todir="${targetFolder}/build/artifacts/plan" />
+	</target>
+
+	<!-- ================================================================================== -->
+	<!-- ============================ PLAN FILES: HRM  ==================================== -->
+	<!-- ================================================================================== -->
+
+
+	<target name="createPlanFileHrm">
+
+		<echo>Creating the plan file for HRM...</echo>
+		<ac:var name="file" value="${targetFolder}/build/artifacts/plan/dnet.HRM-${dnetVersion}.plan" />
+
+		<echo file="${file}">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;plan name="dnet.HRM" version="${dnetVersion}" scoped="false" atomic="true"
+        xmlns="http://www.eclipse.org/virgo/schema/plan"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="
+		        http://www.eclipse.org/virgo/schema/plan 
+		        http://www.eclipse.org/virgo/schema/plan/eclipse-virgo-plan.xsd"&gt;
+		</echo>
+
+		<ac:for list="${planModulesHrm}" param="module">
+			<sequential>
+				<echo file="${file}" append="true">
+		&lt;artifact type="bundle" name="nan21.dnet.module.@{module}.business" version="${dnetVersion}"/&gt;
+		&lt;artifact type="bundle" name="nan21.dnet.module.@{module}.presenter" version="${dnetVersion}"/&gt;
+		&lt;artifact type="bundle" name="nan21.dnet.module.@{module}.data"  version="${dnetVersion}"/&gt;
+		&lt;artifact type="bundle" name="nan21.dnet.module.@{module}.ui.extjs"  version="${dnetVersion}"&gt;
+			&lt;property name="header:Web-ContextPath" value="/nan21.dnet.module.@{module}.ui.extjs" /&gt;			
+		&lt;/artifact&gt;			
+						</echo>
+			</sequential>
+		</ac:for>
+		
+		<echo file="${file}" append="true">
+&lt;/plan&gt;
+		</echo>
+
+	</target>
+</project>
